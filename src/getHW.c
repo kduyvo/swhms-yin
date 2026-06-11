@@ -12,8 +12,8 @@ int getAudioHW(int *destCard, int *destDevice) {
    *destDevice = -1;
    int ret = -1;
    while (fgets(line, sizeof(line), fp)) {
-      if (sscanf(line, "card %d: Device %*[^,], device %d", destCard,
-                 destDevice) == 2) {
+      if (sscanf(line, "card %d: %*[^,], device %d", destCard, destDevice) ==
+          2) {
          ret = 0;
          break;
       }
