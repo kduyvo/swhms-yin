@@ -80,23 +80,18 @@ void arecordProcess(pid_t child[], int pipefd[][2]) {
             int openList[] = {pipefd[arecordOut][1]};
             int openLen = sizeof(openList) / sizeof(int);
             leaveOpen(pipefd, NUM_PIPES, openList, openLen);
-            // dupIO(pipefd[arecordOut][1], STDOUT_FILENO);
-            // closefds(openList, openLen);
+            dupIO(pipefd[arecordOut][1], STDOUT_FILENO);
+            closefds(openList, openLen);
             int devnull = open("/dev/null", O_WRONLY);
-            // dupIO(devnull, STDERR_FILENO);
-            // dupIO(devnull, STDIN_FILENO);
+            dupIO(devnull, STDERR_FILENO);
+            dupIO(devnull, STDIN_FILENO);
             close(devnull);
-            // execlp("arecord", "arecord", "-D",
-            //        // plughw,
-            //        "plughw:3,0"
-            //        "-f",
-            //        "S16_LE", "-c", "1",
-            //        //"--period-size=1",
-            //        //"--buffer-size=512",
-            //        "-r", "48000", "-t", "raw", NULL);
-            execlp("arecord", "arecord", "-D", "plughw:3,0", "-f", "S16_LE",
-                   "-c", "1", "-r", "48000", "-V", "mono", NULL);
-            perror("execlp(): arecord");
+            fprintf(stderr, "launching arecord\n");
+            fflush(stderr);
+            execlp("arecord", "arecord", "-D", plughw, "-f", "S16_LE", "-c",
+                   "1", "-r", "48000", "--period-size=256",
+                   "--buffer-size=1024", "-t", "raw", NULL);
+            perror("execlp arecord failed");
             exit(1);
          }
          sleep(1);
@@ -120,8 +115,8 @@ void keypadProcess(pid_t child[], int pipefd[][2]) {
       dupIO(pipefd[button][1], STDOUT_FILENO);
       closefds(openList, openLen);
       int devnull = open("/dev/null", O_WRONLY);
-      // dupIO(devnull, STDERR_FILENO);
-      // dupIO(devnull, STDIN_FILENO);
+      dupIO(devnull, STDERR_FILENO);
+      dupIO(devnull, STDIN_FILENO);
       close(devnull);
       execl("keypad", "keypad", NULL);
       perror("execlp(): keypad");
@@ -151,7 +146,7 @@ void debugScreenProcess(pid_t child[], int pipefd[][2]) {
       dupIO(pipefd[batInfo][0], debugScreenInBatInfo);
       dupIO(pipefd[button][0], debugScreenInKeypad);
       int devnull = open("/dev/null", O_WRONLY);
-      // dupIO(devnull, STDERR_FILENO);
+      dupIO(devnull, STDERR_FILENO);
       closefds(openList, openLen);
       execl("./debugScreen", "debugScreen", NULL);
       perror("execl(): debugScreen");
@@ -172,8 +167,8 @@ void batteryProcess(pid_t child[], int pipefd[][2]) {
       leaveOpen(pipefd, NUM_PIPES, openList, openLen);
       dupIO(pipefd[batInfo][1], STDOUT_FILENO);
       int devnull = open("/dev/null", O_WRONLY);
-      // dupIO(devnull, STDERR_FILENO);
-      // dupIO(devnull, STDIN_FILENO);
+      dupIO(devnull, STDERR_FILENO);
+      dupIO(devnull, STDIN_FILENO);
       closefds(openList, openLen);
       execl("./battery", "battery", NULL);
       perror("execl(): battery");
@@ -200,9 +195,9 @@ void swhmsProcess(pid_t child[], int pipefd[][2]) {
       dupIO(pipefd[swhmsCommand][1], swhmsOutCommand);
       dupIO(pipefd[instrumentPipe][0], swhmsInInstrument);
       int devnull = open("/dev/null", O_WRONLY);
-      // dupIO(devnull, STDERR_FILENO);
-      // dupIO(devnull, STDOUT_FILENO);
-      // dupIO(devnull, STDIN_FILENO);
+      dupIO(devnull, STDERR_FILENO);
+      dupIO(devnull, STDOUT_FILENO);
+      dupIO(devnull, STDIN_FILENO);
       closefds(openList, openLen);
       execl("./swhms", "swhms", NULL);
       perror("execl(): swhms");
@@ -223,8 +218,8 @@ void uartProcess(pid_t child[], int pipefd[][2]) {
       leaveOpen(pipefd, NUM_PIPES, openList, openLen);
       dupIO(pipefd[forwardedCommand][0], STDIN_FILENO);
       int devnull = open("/dev/null", O_WRONLY);
-      // dupIO(devnull, STDERR_FILENO);
-      // dupIO(devnull, STDOUT_FILENO);
+      dupIO(devnull, STDERR_FILENO);
+      dupIO(devnull, STDOUT_FILENO);
       closefds(openList, openLen);
       execl("./uart", "uart", NULL);
       perror("execl(): uart");
@@ -245,8 +240,8 @@ void alsaProcess(pid_t child[], int pipefd[][2]) {
       leaveOpen(pipefd, NUM_PIPES, openList, openLen);
       dupIO(pipefd[forwardedInfo][0], alsaInPacket);
       int devnull = open("/dev/null", O_WRONLY);
-      // dupIO(devnull, STDERR_FILENO);
-      // dupIO(devnull, STDOUT_FILENO);
+      dupIO(devnull, STDERR_FILENO);
+      dupIO(devnull, STDOUT_FILENO);
       closefds(openList, openLen);
       execl("./alsa", "alsa", NULL);
       perror("execl(): alsa");
